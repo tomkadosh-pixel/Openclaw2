@@ -86,7 +86,9 @@ export default async function Home() {
 
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
         <SummaryStrip summary={summary} />
+        <CompositeStats summary={summary} />
         <WalletGrid wallets={summary.wallets} />
+        <ShadowFeed wallets={summary.wallets} />
       </main>
     </div>
   );
@@ -100,15 +102,17 @@ function SummaryStrip({ summary }: { summary: SummaryResponse }) {
   const cards = [
     { label: "Realized PnL", value: formatUsd(summary.realized_pnl) },
     { label: "Unrealized PnL", value: formatUsd(summary.unrealized_pnl) },
-    { label: "Open Positions", value: summary.total_positions },
+    { label: "Open positions", value: summary.total_positions },
     {
       label: "Win rate",
-      value: `${winRate}% (${summary.profitable_trades}/${summary.total_trades})`,
+      value: summary.total_trades
+        ? `${winRate}% (${summary.profitable_trades}/${summary.total_trades})`
+        : "0%",
     },
   ];
 
   return (
-    <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
         <div
           key={card.label}
@@ -118,6 +122,41 @@ function SummaryStrip({ summary }: { summary: SummaryResponse }) {
             {card.label}
           </p>
           <p className="mt-2 text-2xl font-semibold text-slate-900">{card.value}</p>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function CompositeStats({ summary }: { summary: SummaryResponse }) {
+  const activeWallets = summary.wallets.filter((w) => w.wallet.enabled);
+  const totalDailyCap = activeWallets.reduce(
+    (acc, wallet) => acc + wallet.wallet.daily_loss_cap,
+    0
+  );
+  const currentExposure = activeWallets.reduce(
+    (acc, wallet) => acc + wallet.wallet.max_notional_per_trade,
+    0
+  );
+
+  const cards = [
+    { label: "Active wallets", value: activeWallets.length },
+    { label: "Daily loss budget", value: formatUsd(totalDailyCap) },
+    { label: "Max per-trade exposure", value: formatUsd(currentExposure) },
+    { label: "Shadow Mode", value: "ON" },
+  ];
+
+  return (
+    <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {cards.map((card) => (
+        <div
+          key={card.label}
+          className="rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4 text-sm"
+        >
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            {card.label}
+          </p>
+          <p className="mt-2 text-lg font-semibold text-slate-900">{card.value}</p>
         </div>
       ))}
     </section>
@@ -143,7 +182,14 @@ function WalletGrid({ wallets }: { wallets: WalletState[] }) {
 }
 
 function WalletCard({ wallet }: { wallet: WalletState }) {
-  const { description, copy_ratio, daily_loss_cap, max_notional_per_trade, stop_loss_pct } = wallet.wallet;
+  const {
+    description,
+    copy_ratio,
+    daily_loss_cap,
+    max_notional_per_trade,
+    stop_loss_pct,
+    enabled,
+  } = wallet.wallet;
   const winRate = wallet.total_trades
     ? Math.round((wallet.profitable_trades / wallet.total_trades) * 100)
     : 0;
@@ -151,10 +197,19 @@ function WalletCard({ wallet }: { wallet: WalletState }) {
 
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div>
-        <p className="text-xs uppercase tracking-wide text-slate-500">Source Wallet</p>
-        <p className="font-mono text-sm text-slate-900">{formattedAddress}</p>
-        {description && <p className="text-sm text-slate-500">{description}</p>}
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-slate-500">Source Wallet</p>
+          <p className="font-mono text-sm text-slate-900">{formattedAddress}</p>
+          {description && <p className="text-sm text-slate-500">{description}</p>}
+        </div>
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            enabled ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
+          }`}
+        >
+          {enabled ? "Active" : "Paused"}
+        </span>
       </div>
 
       <div className="grid grid-cols-2 gap-4 text-sm">
@@ -162,6 +217,8 @@ function WalletCard({ wallet }: { wallet: WalletState }) {
         <Param label="Daily loss cap" value={formatUsd(daily_loss_cap)} />
         <Param label="Per-trade cap" value={formatUsd(max_notional_per_trade)} />
         <Param label="Stop loss" value={`${Math.round(stop_loss_pct * 100)}%`} />
+        <Param label="Open positions" value={Object.keys(wallet.open_positions ?? {}).length.toString()} />
+        <Param label="Last sync" value={wallet.last_sync_at ? new Date(wallet.last_sync_at).toLocaleTimeString() : "—"} />
       </div>
 
       <div className="rounded-2xl bg-slate-50 p-4 text-sm">
@@ -175,6 +232,51 @@ function WalletCard({ wallet }: { wallet: WalletState }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function ShadowFeed({ wallets }: { wallets: WalletState[] }) {
+  const events = wallets.flatMap((wallet) => {
+    const address = wallet.wallet.address;
+    const base = wallet.last_sync_at ? new Date(wallet.last_sync_at).toLocaleTimeString() : "Recently";
+    return [
+      {
+        title: `Sync ${address.slice(0, 6)}...${address.slice(-4)}`,
+        body: `${Object.keys(wallet.open_positions ?? {}).length} open positions, ${wallet.total_trades} total trades`,
+        timestamp: base,
+      },
+      {
+        title: `PnL update`,
+        body: `Realized ${formatUsd(wallet.realized_pnl)} | Unrealized ${formatUsd(wallet.unrealized_pnl)}`,
+        timestamp: base,
+      },
+    ];
+  });
+
+  if (!events.length) {
+    return null;
+  }
+
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold">Shadow feed</h2>
+          <p className="text-sm text-slate-500">Latest mirror cycle summaries</p>
+        </div>
+      </div>
+      <ul className="space-y-3">
+        {events.slice(0, 6).map((event, idx) => (
+          <li key={`${event.title}-${idx}`} className="rounded-2xl border border-slate-100 p-3">
+            <div className="flex items-center justify-between text-sm">
+              <p className="font-semibold text-slate-800">{event.title}</p>
+              <span className="text-xs text-slate-500">{event.timestamp}</span>
+            </div>
+            <p className="text-sm text-slate-600">{event.body}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
