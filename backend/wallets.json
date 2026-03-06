@@ -1,0 +1,38 @@
+[
+  {
+    "address": "0x6a57d263cd7c8eba88b857edeb7103851f012afa",
+    "description": "NBA spreads/totals – laddered entries around mid-lines",
+    "copy_ratio": 0.35,
+    "allocation_pct": 0.2,
+    "max_notional_per_trade": 7500,
+    "stop_loss_pct": 0.25,
+    "daily_loss_cap": 2500
+  },
+  {
+    "address": "0x03e8a544e97eeff5753bc1e90d46e5ef22af1697",
+    "description": "NHL moneylines/totals (weflyhigh)",
+    "copy_ratio": 0.3,
+    "allocation_pct": 0.15,
+    "max_notional_per_trade": 6000,
+    "stop_loss_pct": 0.22,
+    "daily_loss_cap": 2200
+  },
+  {
+    "address": "0x93abbc022ce98d6f45d4444b594791cc4b7a9723",
+    "description": "BTC reach weekly/monthly targets (gatorr)",
+    "copy_ratio": 0.5,
+    "allocation_pct": 0.25,
+    "max_notional_per_trade": 9000,
+    "stop_loss_pct": 0.3,
+    "daily_loss_cap": 3000
+  },
+  {
+    "address": "0x0fe40e887acbd0022f89d996acce26ab428501b7",
+    "description": "BTC/ETH daily thresholds (gobblewobble)",
+    "copy_ratio": 0.18,
+    "allocation_pct": 0.1,
+    "max_notional_per_trade": 1200,
+    "stop_loss_pct": 0.18,
+    "daily_loss_cap": 1200
+  }
+]

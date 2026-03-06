@@ -1,4 +1,6 @@
 import asyncio
+import json
+from pathlib import Path
 
 from loguru import logger
 
@@ -38,6 +40,9 @@ class ShadowRunner:
     def _wallet_configs(self) -> list[WalletConfig]:
         if self.settings.wallet_profiles:
             return [WalletConfig.model_validate(cfg) for cfg in self.settings.wallet_profiles]
+        file_wallets = self._load_wallets_from_file()
+        if file_wallets:
+            return file_wallets
         return [
             WalletConfig(
                 address=w,
@@ -45,6 +50,15 @@ class ShadowRunner:
             )
             for w in self.settings.tracked_wallets
         ]
+
+    def _load_wallets_from_file(self) -> list[WalletConfig]:
+        raw_path = self.settings.wallets_file
+        path = Path(raw_path) if raw_path else Path(__file__).resolve().parents[2] / "wallets.json"
+        if not path.exists():
+            return []
+        with path.open("r", encoding="utf-8") as fp:
+            data = json.load(fp)
+        return [WalletConfig.model_validate(item) for item in data]
 
     async def stop(self) -> None:
         self._stop.set()
