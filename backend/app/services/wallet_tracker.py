@@ -11,7 +11,7 @@ from app.models.trade import MarketPosition, OrderSide
 from app.models.wallet import WalletConfig, WalletMirrorState, WalletMirrorSummary
 from app.services.mock_data import mock_positions
 from app.services.polymarket_client import PolymarketClient
-from state.store import WalletStateStore, state_store
+from app.state.store import WalletStateStore, state_store
 
 
 class WalletTracker:
