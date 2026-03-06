@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     max_parallel_positions: int = 20
     max_notional_per_market: float = 250.0
     tracked_wallets: List[str] = []
+    use_mock_data: bool = True
 
     # Scheduler
     poll_interval_seconds: int = 20

@@ -8,6 +8,7 @@ from loguru import logger
 from app.core.config import get_settings
 from app.models.trade import MarketPosition, OrderSide
 from app.models.wallet import WalletConfig, WalletMirrorState, WalletMirrorSummary
+from app.services.mock_data import mock_positions
 from app.services.polymarket_client import PolymarketClient
 from state.store import WalletStateStore, state_store
 
@@ -32,7 +33,7 @@ class WalletTracker:
     async def sync_wallet(self, wallet: WalletConfig) -> List[MarketPosition]:
         logger.info("Syncing wallet %s", wallet.address)
         state = self._ensure_wallet(wallet)
-        raw_positions = await self.client.fetch_wallet_positions(wallet.address)
+        raw_positions = await self._load_positions(wallet)
         positions: List[MarketPosition] = []
         for pos in raw_positions:
             try:
@@ -52,6 +53,15 @@ class WalletTracker:
         state.open_positions = {pos.market_id: pos for pos in positions}
         state.last_sync_at = datetime.utcnow()
         return positions
+
+    async def _load_positions(self, wallet: WalletConfig) -> List[dict]:
+        if self.settings.use_mock_data:
+            return mock_positions(wallet.address)
+        try:
+            return await self.client.fetch_wallet_positions(wallet.address)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Falling back to mock data for %s (%s)", wallet.address, exc)
+            return mock_positions(wallet.address)
 
     async def summary(self) -> WalletMirrorSummary:
         return self.store.summary()
