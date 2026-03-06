@@ -24,11 +24,7 @@ class ShadowRunner:
             await asyncio.sleep(self.settings.poll_interval_seconds)
 
     async def _sync_all(self) -> None:
-        wallets = [
-            WalletConfig(address=w, allocation_pct=self.settings.default_wallet_allocation_pct)
-            for w in self.settings.tracked_wallets
-        ]
-        for wallet in wallets:
+        for wallet in self._wallet_configs():
             positions = await self.tracker.sync_wallet(wallet)
             instructions = self.mirror.build_instructions(wallet, positions)
             for instruction in instructions:
@@ -38,6 +34,17 @@ class ShadowRunner:
                     instruction.target_wallet,
                     instruction.position.size * instruction.allocation_multiplier,
                 )
+
+    def _wallet_configs(self) -> list[WalletConfig]:
+        if self.settings.wallet_profiles:
+            return [WalletConfig.model_validate(cfg) for cfg in self.settings.wallet_profiles]
+        return [
+            WalletConfig(
+                address=w,
+                allocation_pct=self.settings.default_wallet_allocation_pct,
+            )
+            for w in self.settings.tracked_wallets
+        ]
 
     async def stop(self) -> None:
         self._stop.set()

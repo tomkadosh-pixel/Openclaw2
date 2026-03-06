@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import random
 from typing import List
 
 from loguru import logger
@@ -52,6 +53,8 @@ class WalletTracker:
                 logger.warning("Failed to parse position for %s: %s", wallet.address, exc)
         state.open_positions = {pos.market_id: pos for pos in positions}
         state.last_sync_at = datetime.utcnow()
+        if self.settings.use_mock_data:
+            self._apply_mock_metrics(state)
         return positions
 
     async def _load_positions(self, wallet: WalletConfig) -> List[dict]:
@@ -65,3 +68,14 @@ class WalletTracker:
 
     async def summary(self) -> WalletMirrorSummary:
         return self.store.summary()
+
+    def _apply_mock_metrics(self, state: WalletMirrorState) -> None:
+        rng = random.Random(state.wallet.address)
+        total_trades = rng.randint(5, 25)
+        profitable = int(total_trades * rng.uniform(0.4, 0.7))
+        losing = total_trades - profitable
+        state.total_trades = total_trades
+        state.profitable_trades = profitable
+        state.losing_trades = losing
+        state.realized_pnl = round(rng.uniform(-150, 350), 2)
+        state.unrealized_pnl = round(rng.uniform(-80, 180), 2)

@@ -22,12 +22,11 @@ class CopyTrader:
     ) -> List[MirrorInstruction]:
         instructions: List[MirrorInstruction] = []
         for position in mirrored_positions:
-            allocation = wallet_config.allocation_pct
             instructions.append(
                 MirrorInstruction(
                     target_wallet=wallet_config.address,
                     position=position,
-                    allocation_multiplier=allocation,
+                    allocation_multiplier=wallet_config.copy_ratio,
                     max_notional=wallet_config.max_notional_per_trade,
                     stop_loss_pct=wallet_config.stop_loss_pct,
                 )

@@ -3,6 +3,8 @@ from typing import List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.models.wallet import WalletConfig
+
 
 class Settings(BaseSettings):
     """Runtime configuration for the backend worker + API."""
@@ -22,7 +24,8 @@ class Settings(BaseSettings):
     default_wallet_allocation_pct: float = 0.05
     max_parallel_positions: int = 20
     max_notional_per_market: float = 250.0
-    tracked_wallets: List[str] = []
+    tracked_wallets: List[str] = []  # legacy format
+    wallet_profiles: List[WalletConfig] = []
     use_mock_data: bool = True
 
     # Scheduler
