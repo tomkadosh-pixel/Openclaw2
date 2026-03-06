@@ -1,0 +1,16 @@
+app = "openclaw2-dashboard"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+  NEXT_PUBLIC_API_URL = "https://openclaw2-api.fly.dev"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
