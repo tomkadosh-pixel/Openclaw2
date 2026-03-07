@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.models.wallet import WalletConfig
 from app.services.copy_trader import CopyTrader
 from app.services.wallet_tracker import WalletTracker
+from app.state.logs import log_store
 
 
 class ShadowRunner:
@@ -29,6 +30,7 @@ class ShadowRunner:
         for wallet in self._wallet_configs():
             positions = await self.tracker.sync_wallet(wallet)
             instructions = self.mirror.build_instructions(wallet, positions)
+            mirrored = 0
             for instruction in instructions:
                 logger.info(
                     "SHADOW | %s -> %s | size=%.4f",
@@ -36,6 +38,12 @@ class ShadowRunner:
                     instruction.target_wallet,
                     instruction.position.size * instruction.allocation_multiplier,
                 )
+                mirrored += 1
+            log_store.push(
+                level="INFO",
+                message=f"Synced {wallet.address}",
+                context=f"{mirrored} mirror instructions",
+            )
 
     def _wallet_configs(self) -> list[WalletConfig]:
         if self.settings.wallet_profiles:

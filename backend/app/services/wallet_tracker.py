@@ -11,6 +11,7 @@ from app.models.trade import MarketPosition, OrderSide
 from app.models.wallet import WalletConfig, WalletMirrorState, WalletMirrorSummary
 from app.services.mock_data import mock_positions
 from app.services.polymarket_client import PolymarketClient
+from app.state.logs import log_store
 from app.state.store import WalletStateStore, state_store
 
 
@@ -59,11 +60,17 @@ class WalletTracker:
 
     async def _load_positions(self, wallet: WalletConfig) -> List[dict]:
         if self.settings.use_mock_data:
+            log_store.push(level="INFO", message=f"Mock sync for {wallet.address}")
             return mock_positions(wallet.address)
         try:
             return await self.client.fetch_wallet_positions(wallet.address)
         except Exception as exc:  # noqa: BLE001
             logger.warning("Falling back to mock data for %s (%s)", wallet.address, exc)
+            log_store.push(
+                level="WARN",
+                message=f"API fallback for {wallet.address}",
+                context=str(exc),
+            )
             return mock_positions(wallet.address)
 
     async def summary(self) -> WalletMirrorSummary:
