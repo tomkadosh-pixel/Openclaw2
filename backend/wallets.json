@@ -1,38 +1,38 @@
 [
   {
+    "address": "0x0fe40e887acbd0022f89d996acce26ab428501b7",
+    "description": "BTC/ETH daily thresholds (gobblewobble) – 2-3 contracts per day",
+    "copy_ratio": 0.22,
+    "allocation_pct": 0.12,
+    "max_notional_per_trade": 1500,
+    "stop_loss_pct": 0.18,
+    "daily_loss_cap": 1500
+  },
+  {
     "address": "0x6a57d263cd7c8eba88b857edeb7103851f012afa",
-    "description": "NBA spreads/totals – laddered entries around mid-lines",
+    "description": "NBA spreads/totals ladder entries",
     "copy_ratio": 0.35,
     "allocation_pct": 0.2,
-    "max_notional_per_trade": 7500,
+    "max_notional_per_trade": 8000,
     "stop_loss_pct": 0.25,
     "daily_loss_cap": 2500
   },
   {
-    "address": "0x03e8a544e97eeff5753bc1e90d46e5ef22af1697",
-    "description": "NHL moneylines/totals (weflyhigh)",
+    "address": "0x6ade597c0e2b43c0bf3542cada8a5e330d73f5b0",
+    "description": "TheOnlyHuman – NBA totals/moneyline blocks",
     "copy_ratio": 0.3,
     "allocation_pct": 0.15,
-    "max_notional_per_trade": 6000,
+    "max_notional_per_trade": 5000,
     "stop_loss_pct": 0.22,
-    "daily_loss_cap": 2200
+    "daily_loss_cap": 2000
   },
   {
-    "address": "0x93abbc022ce98d6f45d4444b594791cc4b7a9723",
-    "description": "BTC reach weekly/monthly targets (gatorr)",
-    "copy_ratio": 0.5,
-    "allocation_pct": 0.25,
-    "max_notional_per_trade": 9000,
-    "stop_loss_pct": 0.3,
-    "daily_loss_cap": 3000
-  },
-  {
-    "address": "0x0fe40e887acbd0022f89d996acce26ab428501b7",
-    "description": "BTC/ETH daily thresholds (gobblewobble)",
-    "copy_ratio": 0.18,
-    "allocation_pct": 0.1,
-    "max_notional_per_trade": 1200,
-    "stop_loss_pct": 0.18,
-    "daily_loss_cap": 1200
+    "address": "0xf19d7d88cf362110027dcd64750fdd209a04276f",
+    "description": "huhaoli – NBA spreads/moneylines (mid-large size)",
+    "copy_ratio": 0.28,
+    "allocation_pct": 0.18,
+    "max_notional_per_trade": 7000,
+    "stop_loss_pct": 0.24,
+    "daily_loss_cap": 2600
   }
 ]
